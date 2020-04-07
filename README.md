@@ -1,2 +1,2 @@
-# microscopy_analysis
+# Microscopy analysis
 Analysis of microscopy images
