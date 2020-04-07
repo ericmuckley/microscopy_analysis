@@ -4,3 +4,4 @@
 # ignore ipynb checkpoint files
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+Folder/.ipynb_checkpoints/*.ipynb
