@@ -1,1 +1,5 @@
+
+# ignore dm3 file stack (its too big to push to github)
 *.dm3
+# ignore ipynb checkpoint files
+*.ipynb_checkpoints
