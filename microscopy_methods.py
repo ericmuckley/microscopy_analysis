@@ -12,14 +12,16 @@ plt.rcParams['xtick.major.width'] = 3
 plt.rcParams['ytick.minor.width'] = 3
 plt.rcParams['ytick.major.width'] = 3
 
-def plot_setup(labels=['X', 'Y'], fsize=18, title=''):
+def plot_setup(labels=['X', 'Y'], fsize=18, title='',
+               axes_on=True):
     """Creates a custom plot configuration to make graphs look nice.
     This should be called between plt.plot() and plt.show() commands."""
     plt.xlabel(str(labels[0]), fontsize=fsize)
     plt.ylabel(str(labels[1]), fontsize=fsize)
+    plt.axis(axes_on)
     plt.title(title, fontsize=fsize)
     fig = plt.gcf()
-    fig.set_size_inches(8, 8)
+    fig.set_size_inches(6, 6)
 
 def read_stack(filepath):
     """Read dm3 stack file and get image information."""
@@ -73,42 +75,48 @@ def get_gradient_info(img):
     
 def map_image(img, slices):
     """Create maps of an image using a sliding window."""
-    layers = {
-        'variance': np.zeros_like(img),
-        'gradient_mag': np.zeros_like(img),
-        'gradient_phase': np.zeros_like(img),
-
-    }
-    
+    # create dictionary to hold each layer map
+    keys = [
+        'intensity',
+        'variance',
+        'gradient_mag',
+        'gradient_phase']
+    layers = {k: np.zeros_like(img).astype(float) for k in keys}
     # loop over each sliding window
     for w in range(len(slices['s'])):
-        
+
         # get oversampled window
         osw = img[slices['os'][w]]
-        
         # get statistics of oversampled window
         gradient_mag, gradient_phase = get_gradient_info(osw)
-        variance = np.var(osw)
         
         # get slice of sampled window
         sw = slices['s'][w]
         # save statistics of sampled image window
-        layers['variance'][sw] = variance
+        layers['intensity'][sw] = np.mean(osw)
+        layers['variance'][sw] = np.var(osw)
         layers['gradient_mag'][sw] = gradient_mag
         layers['gradient_phase'][sw] = gradient_phase
 
+    layers['intensity_mask'] = np.where(
+        norm_image(layers['intensity']) < 0.6, 1, 0)
+    
     return layers
 
 
 
 def print_info_message():
     """Print a message if this module is run by itself."""
-    print('\n\n"microscopy_methods.py":')
+    print('\n\n=======================================================')
+    print('"microscopy_methods.py":')
+    print('-------------------------------------------------------')
     print('This module contains functions for analysis of ')
     print('a stack of ".dm3" format microscopy images.')
     print('To perform the analysis, run the Jupyter Noteboook')
     print('called "read_stack.ipynb", which will call this module.')
-          
+    print('The full repository is located at:')
+    print('https://github.com/ericmuckley/microscopy_analysis')
+    print('=======================================================')      
 
 if __name__ == '__main__':
     print_info_message()
