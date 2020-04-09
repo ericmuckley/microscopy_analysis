@@ -1,5 +1,4 @@
 import os
-import cv2
 import numpy as np
 from ncempy.io import dm
 import matplotlib.pyplot as plt
@@ -63,3 +62,54 @@ def get_window_slices(img, samples, oversamples):
         s_slices.append(s_slice)
         os_slices.append(os_slice)
     return {'s': s_slices, 'os': os_slices}
+
+
+def get_gradient_info(img):
+    """Get magnitude and phase of gradient of 2D image."""
+    grad_x, grad_y = np.abs(np.gradient(img))
+    grad_mag = np.mean(np.hypot(grad_x, grad_y))
+    grad_phase = np.mean(np.arctan(grad_y/grad_x))
+    return grad_mag, grad_phase
+    
+def map_image(img, slices):
+    """Create maps of an image using a sliding window."""
+    layers = {
+        'variance': np.zeros_like(img),
+        'gradient_mag': np.zeros_like(img),
+        'gradient_phase': np.zeros_like(img),
+
+    }
+    
+    # loop over each sliding window
+    for w in range(len(slices['s'])):
+        
+        # get oversampled window
+        osw = img[slices['os'][w]]
+        
+        # get statistics of oversampled window
+        gradient_mag, gradient_phase = get_gradient_info(osw)
+        variance = np.var(osw)
+        
+        # get slice of sampled window
+        sw = slices['s'][w]
+        # save statistics of sampled image window
+        layers['variance'][sw] = variance
+        layers['gradient_mag'][sw] = gradient_mag
+        layers['gradient_phase'][sw] = gradient_phase
+
+    return layers
+
+
+
+def print_info_message():
+    """Print a message if this module is run by itself."""
+    print('\n\n"microscopy_methods.py":')
+    print('This module contains functions for analysis of ')
+    print('a stack of ".dm3" format microscopy images.')
+    print('To perform the analysis, run the Jupyter Noteboook')
+    print('called "read_stack.ipynb", which will call this module.')
+          
+
+if __name__ == '__main__':
+    print_info_message()
+
