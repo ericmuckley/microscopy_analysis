@@ -34,6 +34,9 @@ def read_stack(filepath):
 
 def norm_image(img):
     """Normalize an image so its min and max stretch from 0 to 1."""
+    median, std = np.median(img), np.std(img)
+    low_clip, high_clip = median-5*std, median+5*std
+    img = np.clip(img, low_clip, high_clip)
     img = img - img.min()
     img = img / img.max()
     return img
