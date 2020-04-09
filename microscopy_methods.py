@@ -27,7 +27,7 @@ def show_image_stack(data):
             norm_image(data['data'][i,:,:]),
             origin='lower',
             cmap='gray')
-        ax.text(100, 100, str(i), color='k', fontsize=24)
+        ax.text(100, 100, str(i+1), color='k', fontsize=24)
     fig = plt.gcf()
     fig.set_size_inches((9, 20))
     plt.tight_layout()
@@ -103,9 +103,10 @@ def map_image(img, slices):
     # create dictionary to hold each layer map
     keys = [
         'intensity',
-        'variance',
         'gradient_mag',
-        'gradient_phase']
+        #'gradient_phase'
+        #'variance',
+        ]
     layers = {k: np.zeros_like(img).astype(float) for k in keys}
     # loop over each sliding window
     for w in range(len(slices['s'])):
@@ -114,14 +115,14 @@ def map_image(img, slices):
         osw = img[slices['os'][w]]
         # get statistics of oversampled window
         gradient_mag, gradient_phase = get_gradient_info(osw)
-        
+
         # get slice of sampled window
         sw = slices['s'][w]
         # save statistics of sampled image window
         layers['intensity'][sw] = np.mean(osw)
-        layers['variance'][sw] = np.var(osw)
         layers['gradient_mag'][sw] = gradient_mag
-        layers['gradient_phase'][sw] = gradient_phase
+        #layers['gradient_phase'][sw] = gradient_phase
+        #layers['variance'][sw] = np.var(osw)
 
     layers['intensity_mask'] = np.where(
         norm_image(layers['intensity']) < 0.6, 1, 0)
