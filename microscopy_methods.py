@@ -12,6 +12,28 @@ plt.rcParams['xtick.major.width'] = 3
 plt.rcParams['ytick.minor.width'] = 3
 plt.rcParams['ytick.major.width'] = 3
 
+def show_image_stack(data):
+    """Shows each image in an image stack. The input
+    is a dictionary which contains an image stack in
+    the key 'data'."""
+    # set number of columns and rows for subplots array
+    columns = 4
+    rows = int(np.ceil(data['data'].shape[0]/columns))
+    # loop over each image in stak and plot it
+    for i in range(data['data'].shape[0]):
+        ax = plt.subplot(rows, columns, i+1)
+        ax.axis(False)
+        ax.imshow(
+            norm_image(data['data'][i,:,:]),
+            origin='lower',
+            cmap='gray')
+        ax.text(100, 100, str(i), color='k', fontsize=24)
+    fig = plt.gcf()
+    fig.set_size_inches((9, 20))
+    plt.tight_layout()
+    plt.show()
+
+
 def plot_setup(labels=['X', 'Y'], fsize=18, title='',
                axes_on=True):
     """Creates a custom plot configuration to make graphs look nice.
@@ -35,7 +57,7 @@ def read_stack(filepath):
 def norm_image(img):
     """Normalize an image so its min and max stretch from 0 to 1."""
     median, std = np.median(img), np.std(img)
-    low_clip, high_clip = median-5*std, median+5*std
+    low_clip, high_clip = median-7*std, median+7*std
     img = np.clip(img, low_clip, high_clip)
     img = img - img.min()
     img = img / img.max()
