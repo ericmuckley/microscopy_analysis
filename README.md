@@ -1,6 +1,7 @@
 # Microscopy analysis
 
-This notebook and associated methods perform analysis of microscopy images in **.dm3** format.
+This notebook and associated methods perform analysis of microscopy images in **.dm3** format. The notebook can be viewed at https://nbviewer.jupyter.org/github/ericmuckley/microscopy_analysis/blob/master/read_stack.ipynb
+
 
 ### Methods
 
