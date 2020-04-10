@@ -47,7 +47,7 @@ def plot_domains(domains, plot_contours=True, plot_areas=True, plot_domain_marke
             # plot areas on domain map
             plt.text(domains['mean_x'][i],
                      domains['mean_y'][i],
-                     str(round(domains['areas'][i])))
+                     str(round(domains['areas'][i])), fontsize=14)
         if plot_domain_markers:
             # plot marker in the center of each domain
             plt.scatter(domains['mean_x'][i],
@@ -118,7 +118,7 @@ def show_image_stack(data):
             norm_image(data['data'][i,:,:]),
             origin='lower',
             cmap='gray')
-        ax.text(100, 100, str(i+1), color='k', fontsize=24)
+        ax.text(100, 100, str(i), color='k', fontsize=24)
     fig = plt.gcf()
     fig.set_size_inches((9, 20))
     plt.tight_layout()
