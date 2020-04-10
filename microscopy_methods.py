@@ -1,4 +1,21 @@
+"""
+This module contains functions for analysis of 
+a stack of ".dm3" format microscopy images.
+To perform the analysis, run the Jupyter Noteboook
+called "read_stack.ipynb", which will call this module.
+The full repository is located at:
+https://github.com/ericmuckley/microscopy_analysis
+
+
+Created April 8, 2020
+author: ericmuckley@gmail.com
+"""
+
 import os
+import cv2
+import sklearn
+from sklearn import cluster
+import skimage
 import numpy as np
 from ncempy.io import dm
 import matplotlib.pyplot as plt
@@ -11,6 +28,36 @@ plt.rcParams['xtick.minor.width'] = 3
 plt.rcParams['xtick.major.width'] = 3
 plt.rcParams['ytick.minor.width'] = 3
 plt.rcParams['ytick.major.width'] = 3
+
+
+def get_domains(img, n_clusters=2, contour_level=0.5, minimum_area=1):
+    """Get crystallite domain information extracted from an image.
+    First, 'n_clusters' number of domains are found by K-means
+    clustering. Then contours of k-means cluster map are generted,
+    which serve as domain boundaries between clusters. Finally, cluster
+    areas are calculated. Returns a dictionary of countour lines which
+    define each cluster domain and area of each domain."""
+    # perform k-means clustering and detect contours of kmeans map
+    kmeans = cluster.KMeans(n_clusters=n_clusters)
+    kmeans.fit(img.reshape((-1, 1)))
+    # create 2D map of k-means clustering results
+    kmeans_map = norm_image(kmeans.labels_.reshape(img.shape))
+    # extract contour line ordered pairs from the map
+    contours = skimage.measure.find_contours(kmeans_map, contour_level)
+    # clasulate area of inside each contour line
+    areas = [cv2.contourArea(cv2.UMat(
+        np.expand_dims(c.astype(np.float32), 1))) for c in contours]
+    # create zipped list of areas and contour lines below area threshold
+    zipped = [i for i in zip(areas, contours) if i[0] >= minimum_area]
+    # sort from large area to small area domains
+    zipped.sort(key=lambda x: x[0], reverse=True)
+    # create dictionary to hold results
+    domains = {
+        'area': [z[0] for z in zipped],
+        'contour': [np.flip(z[1]) for z in zipped],
+        'mean_x': [np.mean(z[1][:, 1]) for z in zipped],
+        'mean_y': [np.mean(z[1][:, 0]) for z in zipped]}
+    return domains
 
 def show_image_stack(data):
     """Shows each image in an image stack. The input
@@ -33,7 +80,6 @@ def show_image_stack(data):
     plt.tight_layout()
     plt.show()
 
-
 def plot_setup(labels=['X', 'Y'], fsize=18, title='',
                axes_on=True):
     """Creates a custom plot configuration to make graphs look nice.
@@ -43,7 +89,7 @@ def plot_setup(labels=['X', 'Y'], fsize=18, title='',
     plt.axis(axes_on)
     plt.title(title, fontsize=fsize)
     fig = plt.gcf()
-    fig.set_size_inches(6, 6)
+    fig.set_size_inches(8, 8)
 
 def read_stack(filepath):
     """Read dm3 stack file and get image information."""
@@ -110,12 +156,10 @@ def map_image(img, slices):
     layers = {k: np.zeros_like(img).astype(float) for k in keys}
     # loop over each sliding window
     for w in range(len(slices['s'])):
-
         # get oversampled window
         osw = img[slices['os'][w]]
         # get statistics of oversampled window
         gradient_mag, gradient_phase = get_gradient_info(osw)
-
         # get slice of sampled window
         sw = slices['s'][w]
         # save statistics of sampled image window
@@ -128,8 +172,6 @@ def map_image(img, slices):
         norm_image(layers['intensity']) < 0.6, 1, 0)
     
     return layers
-
-
 
 def print_info_message():
     """Print a message if this module is run by itself."""
@@ -146,4 +188,3 @@ def print_info_message():
 
 if __name__ == '__main__':
     print_info_message()
-
