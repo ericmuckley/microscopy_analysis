@@ -30,7 +30,7 @@ plt.rcParams['ytick.minor.width'] = 3
 plt.rcParams['ytick.major.width'] = 3
 
 
-def get_domains(img, n_clusters=2, contour_level=0.5, minimum_area=1):
+def get_domains(img, n_clusters=2, contour_level=0.5, min_area=1, max_area=100000):
     """Get crystallite domain information extracted from an image.
     First, 'n_clusters' number of domains are found by K-means
     clustering. Then contours of k-means cluster map are generted,
@@ -48,7 +48,7 @@ def get_domains(img, n_clusters=2, contour_level=0.5, minimum_area=1):
     areas = [cv2.contourArea(cv2.UMat(
         np.expand_dims(c.astype(np.float32), 1))) for c in contours]
     # create zipped list of areas and contour lines below area threshold
-    zipped = [i for i in zip(areas, contours) if i[0] >= minimum_area]
+    zipped = [i for i in zip(areas, contours) if min_area <= i[0] <= max_area]
     # sort from large area to small area domains
     zipped.sort(key=lambda x: x[0], reverse=True)
     # create dictionary to hold results
