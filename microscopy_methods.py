@@ -187,9 +187,29 @@ def get_gradient_info(img):
     grad_mag = np.mean(np.hypot(grad_x, grad_y))
     #grad_phase = np.mean(np.arctan(grad_y/grad_x))
     return grad_mag
-    
+
+def map_local_fft(img, slices):
+    """Create FFT maps of an image using a sliding window."""
+    # create dictionary to hold each layer map
+    layers = {'intensity': np.zeros_like(img),
+              'angle': np.zeros_like(img)}
+    # loop over each sliding window
+    for w in range(len(slices['s'])):
+        # get oversampled window
+        osw = img[slices['os'][w]]
+        # get slice of sampled window
+        sw = slices['s'][w]
+        # acquire local FFT
+        fft_full = fp.fftshift(fp.fft2((osw).astype(float)))
+        fft_re = norm_image(np.abs(np.real(fft_full)))
+        # filter out highest center peak
+        fft_re = np.where(fft_re == 1, 0, fft_re)
+        # save result
+        layers['intensity'][sw] = fft_re.max()
+    return layers
+
 def map_image(img, slices):
-    """Create maps of an image using a sliding window."""
+    """Create gradient maps of an image using a sliding window."""
     # create dictionary to hold each layer map
     keys = [
         'intensity',
