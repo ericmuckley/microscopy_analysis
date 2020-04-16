@@ -22,6 +22,8 @@ There is a significant difference in images which contain assemblies of de-wet p
 4. the boundaries and areas of crystalline areas are calculated
 
 
+Final results are shown in the last plots in the **read_stack.ipynb** notebook.
+
 ### Description of files
 
 * **read_stack.ipynb**: Jupyter Notebook which performs analysis of microscopy images
